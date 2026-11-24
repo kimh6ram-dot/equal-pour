@@ -1,0 +1,122 @@
+/* 미니멀 UI: 흰 배경 · 검정/회색 · 게임 속 물 색만 유지 */
+:root {
+  --text:#000; --muted:#777; --line:#ddd;
+  /* MINIGAME_SYSTEM §37 공통 토큰 (화면마다 따로 잡지 않는다) */
+  --app-max-width:430px; --content-width:320px; --preview-height:200px;
+  --gap-preview-title:22px; --gap-title-content:20px; --gap-content-cta:28px; --title-h:37px; --body-h:96px; --button-height:48px;
+  /* 메인 묶음(프레임~버튼) 높이: 위:아래 1:2 로 정중앙보다 살짝 위에 두고, 플레이 화면도 같은 y 에서 시작 */
+  --bundle-h:451px; --stage-top:max(56px, calc(32px + (100dvh - 32px - 28px - var(--bundle-h)) / 3));
+}
+@media (max-height:640px) { :root { --preview-height:150px; --gap-preview-title:12px; --button-height:42px; --bundle-h:385px; } }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { margin:0; min-height:100%; background:#fff; color:var(--text);
+  font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;
+  overscroll-behavior:none; }
+html { overflow-x:hidden; }   /* body 에 걸면 body 가 스크롤 컨테이너가 되어 긴 결과 화면(컵 100개)이 스크롤되지 않는다 */
+body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; }
+[hidden] { display:none !important; }
+#app { width:100%; margin:0 auto; }   /* 게임 영역 폭은 컵 개수별로 JS(--sw)가 정한다(최대 420/620/760). 항상 화면 가운데 */
+.screen { min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; }
+
+/* 버튼: 단색, 그림자/그라데이션/두꺼운 테두리 없음 */
+.btn { font:inherit; font-size:15px; font-weight:800; padding:12px 20px; background:#fff; color:#000; border:1px solid #000; border-radius:2px; cursor:pointer; }
+.btn.primary { background:#000; color:#fff; }
+.btn.small { font-size:14px; font-weight:500; padding:6px 12px; border-color:var(--line); color:var(--muted); }
+.btn:active { opacity:.7; }
+.btn:disabled { background:#e5e5e5; color:#999; border-color:#e5e5e5; cursor:default; opacity:1; }
+
+/* 입력 환경별 노출 */
+.touch-only { display:none; }
+@media (hover:none) and (pointer:coarse), (max-width:700px) {
+  .pc-only { display:none !important; }
+  .touch-only { display:block; }
+  .controls .pad { display:grid; }
+}
+
+/* 게임: 모바일 폭 프레임(430) 안에서 상단 정보 · 게임 오브젝트 · 하단 조작 */
+.game { --sw:min(var(--content-width), 100% - 40px); --menu-w:min(var(--content-width), 100% - 40px);
+  min-height:100vh; min-height:100dvh; justify-content:flex-start; align-items:center; padding-top:calc(var(--stage-top) - 44px); }
+.hud, .stage, .controls { width:var(--sw); }
+.hud { height:44px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex:none; position:sticky; top:0; z-index:5; background:#fff; }
+.hud-stage { font-size:14px; font-weight:800; letter-spacing:.04em; }
+.stage-wrap { flex:none; width:100%; display:flex; justify-content:center; }
+.stage { position:relative; touch-action:pan-y; background:#fff; height:var(--preview-height); border:1px solid #000; }
+.controls { flex:none; min-height:48px; padding:6px 0 env(safe-area-inset-bottom); position:sticky; bottom:0; z-index:5; background:#fff; display:flex; flex-direction:column; gap:8px; align-items:stretch; justify-content:center; }
+.hint { margin:0; text-align:center; font-size:13px; font-weight:500; line-height:1.6; color:var(--muted); }
+
+/* 메인: 실제 게임 화면(물통 + 빈 컵) → 제목 → 컵 개수 입력 → 시작하기. CTA 는 항상 콘텐츠 바로 아래 */
+.menubar { display:none; width:var(--menu-w); flex-direction:column; align-items:stretch; text-align:center; }
+.menubar h1 { margin:var(--gap-preview-title) 0 0; min-height:37px; font-size:28px; font-weight:800; line-height:1.3; }
+.cupform { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:0; height:44px; font-size:18px; font-weight:700; }
+.cupform input { width:84px; height:44px; padding:0; text-align:center; font:inherit; font-size:22px; font-weight:800; color:#000; background:#fff;
+  border:1px solid #000; border-radius:2px; outline:none; -webkit-user-select:text; user-select:text; }
+.cupform input:focus { outline:2px solid #000; outline-offset:-1px; }
+.cupmsg { margin:6px 0 0; height:18px; font-size:12px; font-weight:500; line-height:18px; color:#999; }
+.menubar .start { width:100%; height:var(--button-height); margin-top:var(--gap-content-cta); padding:0; font-size:16px; font-weight:700; }
+.menubody { width:100%; margin-top:var(--gap-title-content); min-height:var(--body-h); display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
+.intro-copy { margin:0; font-size:15px; font-weight:500; line-height:1.5; color:var(--muted); text-align:center; white-space:pre-line; }
+.menubody .setup { width:100%; }
+.menubar .setup { display:none; }
+.game.is-setup .menubar .setup { display:block; }
+.game.is-setup .menubar .intro { display:none; }
+.game.is-menu { padding-top:var(--stage-top); }
+.game.is-menu .menubar { display:flex; }
+.game.is-menu .hud, .game.is-menu .controls { display:none; }
+
+/* 월드: 컵은 한 가로줄. #world 전체를 카메라가 가로로 옮긴다 */
+.world { position:absolute; left:0; top:0; }
+.ground { display:none; }
+.layer { position:absolute; inset:0; pointer-events:none; }
+.cup { position:absolute; }
+.cup, .bottle { filter:saturate(1.2) contrast(1.12) brightness(.93); }   /* 컵·물병 색을 메인·플레이 모두 조금 더 진하게 */
+.cup-svg { display:block; width:100%; height:100%; }
+.bottle { position:absolute; left:0; top:0; transform-origin:50% 0; will-change:transform; pointer-events:none; }
+.stream { display:none; position:absolute; pointer-events:none; background:#8ac8e6; }
+.fx { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; }
+
+.pad { display:none; width:100%; grid-template-columns:1fr 1fr 1fr 1fr 2.2fr; gap:8px; touch-action:none; }
+.pad-btn, .pour { height:60px; }
+.pad-btn { font:inherit; font-size:24px; font-weight:800; background:#fff; color:#000; border:1px solid #000; border-radius:2px; padding:0; touch-action:none; -webkit-user-select:none; user-select:none; }
+.pad-btn.on { background:#000; color:#fff; }
+.pour { width:100%; font:inherit; font-size:16px; font-weight:800; background:#000; color:#fff; border:0; border-radius:2px;
+  touch-action:none; -webkit-user-select:none; user-select:none; }
+.pour.on { background:#555; }
+
+/* 결과: 컵이 많으면 카드가 길어지고 화면이 세로로 스크롤된다 */
+.result { --rw:min(var(--content-width), 100% - 40px);   /* 플레이 무대와 같은 폭 → 결과 컵이 플레이 때보다 커 보이지 않음 */ align-items:center; justify-content:flex-start; padding:var(--stage-top) 0 24px; gap:14px; }   /* 상단 = 메인/플레이 무대 상단과 같은 y */
+.card { width:var(--rw); max-width:100%; }   /* 실제 폭은 JS 가 플레이 무대 폭으로 지정 */
+.card svg { display:block; width:100%; height:auto; }
+.actions { display:flex; gap:10px; width:var(--rw); }
+.actions .btn { flex:1; height:var(--button-height); padding:0 8px; font-size:15px; font-weight:700; }
+
+/* 친구 도전장 */
+.actions.stack { flex-direction:column; }
+.vsframe { width:var(--rw); height:var(--preview-height); border:1px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; text-align:center; }
+.vsframe.two { flex-direction:row; justify-content:space-around; gap:0; }
+.vs-side { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; color:var(--muted); }
+.vs-side.win { color:#000; }
+.vs-mid { font-size:13px; font-weight:800; color:#999; }
+.vs-count { margin:0; font-size:12px; font-weight:500; color:var(--muted); }
+.vs-score { font-size:49px; font-weight:800; line-height:1.1; }
+.vs-score .u { font-size:16px; margin-left:3px; }
+.vs-name { margin:0; font-size:15px; font-weight:700; }
+.vs-title { margin:var(--gap-preview-title) 0 0; min-height:var(--title-h); font-size:22px; font-weight:800; line-height:1.3; text-align:center; }
+.vs-hint { margin:0 0 6px; font-size:15px; font-weight:500; color:var(--muted); text-align:center; }
+.modal { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal-card { width:min(320px,100%); background:#fff; padding:20px; border-radius:2px; display:flex; flex-direction:column; gap:12px; }
+.modal-title { margin:0; font-size:16px; font-weight:800; text-align:center; }
+.modal-card input { height:44px; padding:0 12px; font:inherit; font-size:16px; border:1px solid #000; border-radius:2px; outline:none; -webkit-user-select:text; user-select:text; }
+.modal-row { display:flex; gap:8px; }
+.modal-row .btn { flex:1; height:44px; padding:0; }
+.toast { position:fixed; left:50%; bottom:40px; transform:translateX(-50%); z-index:60; background:#000; color:#fff; font-size:14px; font-weight:600; padding:10px 16px; border-radius:2px; opacity:0; pointer-events:none; transition:opacity .2s; }
+.toast.show { opacity:1; }
+
+/* NEW RECORD! 등장: 작게 시작해 살짝 커졌다 자리 잡는다 (화면에서만, 저장 PNG 는 정지 상태) */
+.card .nr { transform-box:fill-box; transform-origin:center; animation:nrIn .7s cubic-bezier(.2,1.5,.4,1) .15s both; }
+@keyframes nrIn { 0% { transform:scale(.2); opacity:0; } 60% { opacity:1; } 100% { transform:scale(1); opacity:1; } }
+.actions { flex:none; }
+.actions.stack .btn { flex:none; width:100%; height:var(--button-height); }
+
+.hud-btns { display:flex; gap:6px; }
+.hud-btns .btn.small { white-space:nowrap; padding:6px 10px; }
+#btnSound[aria-pressed="false"] { color:#aaa; }

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>똑같이 나누세요</title>
+<meta property="og:title" content="똑같이 나누세요">
+<meta property="og:site_name" content="똑같이 나누세요">
+<meta property="og:description" content="컵 개수를 정하고 물을 똑같이 나눠보세요.">
+<meta name="apple-mobile-web-app-title" content="똑같이 나누세요">
+<meta name="application-name" content="똑같이 나누세요">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <section id="game" class="screen game is-menu" hidden>
+    <header class="hud">
+      <span id="hudInfo" class="hud-stage"></span>
+      <span class="hud-btns">
+        <button id="btnSound" class="btn small" aria-pressed="true">물소리 ON</button>
+        <button id="btnRestart" class="btn small">다시 따르기</button>
+      </span>
+    </header>
+    <div class="stage-wrap">
+      <div id="stage" class="stage">
+        <div id="world" class="world">
+          <div class="ground"></div>
+          <div id="layerCups" class="layer"></div>
+          <div id="stream" class="stream"></div>
+          <div id="stream2" class="stream"></div>
+          <div id="bottle" class="bottle"></div>
+        </div>
+        <canvas id="fx" class="fx"></canvas>
+      </div>
+    </div>
+    <div class="menubar">
+      <h1>똑같이 나누세요</h1>
+      <div class="menubody">
+        <p class="intro-copy intro">물을 정확하게 나눠 따라보세요.
+당신의 감각은 몇점일까요?</p>
+        <div class="setup">
+          <label class="cupform"><span>컵 개수</span><input id="cupInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" aria-label="컵 개수"><span>개</span></label>
+          <p id="cupMsg" class="cupmsg" aria-live="polite"></p>
+        </div>
+      </div>
+      <button id="btnIntro" class="btn primary start intro">시작하기</button>
+      <button id="btnStart" class="btn primary start setup">시작하기</button>
+    </div>
+    <footer class="controls">
+      <p class="hint pc-only">← → 이동 · ↑ ↓ 줄 이동 · SPACE 물 따르기</p>
+      <p class="hint touch-only">↑↓ 줄 이동 · ←→ 이동 · 길게 눌러 따르기</p>
+      <div class="pad">
+        <button id="btnUp" class="pad-btn" aria-label="윗줄">↑</button>
+        <button id="btnDown" class="pad-btn" aria-label="아랫줄">↓</button>
+        <button id="btnLeft" class="pad-btn" aria-label="왼쪽">←</button>
+        <button id="btnRight" class="pad-btn" aria-label="오른쪽">→</button>
+        <button id="btnPour" class="pour">물 따르기</button>
+      </div>
+    </footer>
+  </section>
+
+  <section id="result" class="screen result" hidden>
+    <div id="resultCard" class="card"></div>
+    <div class="actions">
+      <button id="btnRetry" class="btn primary">다시 도전</button>
+      <button id="btnSave" class="btn">결과 이미지 저장</button>
+    </div>
+    <div class="actions stack">
+      <button id="btnVs" class="btn primary" hidden>대결 결과 보기</button>
+      <button id="btnChallenge" class="btn">친구에게 도전장 보내기</button>
+    </div>
+  </section>
+
+  <!-- 도전장 링크로 진입 -->
+  <section id="challenge" class="screen result" hidden>
+    <div class="vsframe">
+      <p id="chCount" class="vs-count"></p>
+      <div id="chScore" class="vs-score"></div>
+      <p id="chName" class="vs-name"></p>
+    </div>
+    <h2 class="vs-title">도전장이 도착했습니다</h2>
+    <p class="vs-hint">이길 수 있으면 해보세요.</p>
+    <div class="actions stack"><button id="btnChStart" class="btn primary">도전 시작</button></div>
+  </section>
+
+  <!-- 대결 결과 -->
+  <section id="battle" class="screen result" hidden>
+    <div class="vsframe two">
+      <div id="vsA" class="vs-side"><p id="vsACount" class="vs-count"></p><div id="vsAScore" class="vs-score"></div><p id="vsAName" class="vs-name"></p></div>
+      <span class="vs-mid">VS</span>
+      <div id="vsB" class="vs-side"><p id="vsBCount" class="vs-count"></p><div id="vsBScore" class="vs-score"></div><p id="vsBName" class="vs-name"></p></div>
+    </div>
+    <h2 id="vsWinner" class="vs-title"></h2>
+    <div class="actions stack">
+      <button id="btnRematch" class="btn primary">다시 붙기</button>
+      <button id="btnVsDetail" class="btn">내 결과 자세히 보기</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="modal" class="modal" hidden>
+  <div class="modal-card">
+    <p class="modal-title">도전장에 적을 닉네임</p>
+    <input id="modalInput" type="text" maxlength="12" placeholder="예: 공평의 왕" autocomplete="off">
+    <div class="modal-row"><button id="modalCancel" class="btn">취소</button><button id="modalOk" class="btn primary">확인</button></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="js/config.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/records.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/cups.js"></script>
+<script src="js/cupimg.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/rendering.js"></script>
+<script src="js/game.js"></script>
+<script src="js/result.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/input.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
